@@ -369,9 +369,7 @@ def get_nn_complete_model(train, hidden1_neurons = 35, hidden2_neurons = 15):
 
 # Train models and predict
 
-seed = 0
 model1 = ensemble.GradientBoostingRegressor(learning_rate = 0.2,
-                                            random_state = seed,
                                             n_estimators = 50,
                                             subsample = 0.8,
                                             max_depth = 10,
@@ -381,7 +379,6 @@ model1 = ensemble.GradientBoostingRegressor(learning_rate = 0.2,
 #                                         max_features = 'sqrt',
 #                                         max_depth = 10)
 model3 = XGBRegressor(learning_rate = 0.1,
-                      random_state = seed,
                       n_estimators = 100,
                       subsample = 0.8,
                       colsample_bytree = 0.8,
@@ -395,10 +392,9 @@ print("Model1 trained")
 model3.fit(train[col], np.log1p(train['visitors'].values))
 print("Model3 trained")
 model4.fit(nn_train[0], nn_train[1],
-           epochs = 100,
+           epochs = 50,
            batch_size = 512,
            shuffle = True,
-           # callbacks = [lr_decay],
            verbose = 2)
 print("Model4 trained")
 
@@ -453,7 +449,7 @@ wkend_holidays = data['hol'].apply(
 		           x.holiday_flg == 1),
 		axis = 1)
 data['hol'].loc[wkend_holidays, 'holiday_flg'] = 0
-data['hol']['weight'] = ((data['hol'].index + 1) / len(data['hol'])) ** 5
+data['hol']['weight'] = ((data['hol'].index + 1) / len(data['hol'])) ** 7
 
 visit_data = data['tra'].merge(data['hol'], left_on = 'visit_date',
                                right_on = 'calendar_date', how = 'left')
