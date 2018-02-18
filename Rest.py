@@ -6,12 +6,16 @@
 import os
 import numpy as np
 import pandas as pd
-from sklearn import preprocessing, ensemble, metrics
+from sklearn import preprocessing, ensemble, metrics, tree
 from xgboost import XGBRegressor
 import keras
 import keras.backend as K
 from keras.layers import Embedding, Input, Dense
 from keras.models import Model
+
+from xgboost import plot_importance, plot_tree
+import matplotlib.pyplot as plt
+import graphviz
 
 # Load data
 
@@ -397,6 +401,41 @@ model4.fit(nn_train[0], nn_train[1],
            shuffle = True,
            verbose = 2)
 print("Model4 trained")
+
+# Plot GradientBoostingRegressor's features' importance
+feature_importance = model1.feature_importances_
+feature_importance = feature_importance / feature_importance.max()
+sorted_idx = np.argsort(feature_importance)
+sorted_idx = sorted_idx[(len(sorted_idx) - 10):(len(sorted_idx) - 1)]
+pos = np.arange(sorted_idx.shape[0]) + .5
+plt.figure()
+plt.barh(pos, feature_importance[sorted_idx], align = 'center')
+plt.yticks(pos, [col[i] for i in sorted_idx])
+plt.xlabel('Relative Importance')
+plt.title('Features'' Importance')
+plt.show()
+
+# # Plot GradientBoostingRegressor first trees
+# for i in range(3):
+# 	graphviz.Source(tree.export_graphviz(model1.estimators_[i, 0],
+# 	                                     out_file = None,
+# 	                                     feature_names = col,
+# 	                                     max_depth = 4,
+# 	                                     rotate = True,
+# 	                                     filled = True,
+# 	                                     rounded = True,
+# 	                                     special_characters = True),
+# 	                format = 'png').render("Tree_" + i.__str__())
+
+# Plot XGBoost features' importance
+plot_importance(model3, grid = False, max_num_features = 10,
+                title = 'Relative Importance', xlabel = 'Features'' Importance')
+plt.show()
+
+# # Plot XGBoost first trees
+# for i in range(3):
+# 	plot_tree(model3, num_trees = i, rankdir = 'LR')
+# 	plt.show()
 
 score1 = RMSE(np.log1p(train['visitors'].values), model1.predict(train[col]))
 # score2 = RMSE(np.log1p(train['visitors'].values), model2.predict(train[col]))
